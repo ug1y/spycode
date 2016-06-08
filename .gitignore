@@ -77,3 +77,13 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# VC++ 6.0 Debug files
+*.ilk
+*.pdb
+*.idb
+
+# VC++ 6.0 Project files
+*.ncb
+*.plg
+*.opt
