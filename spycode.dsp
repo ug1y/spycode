@@ -87,6 +87,14 @@ LINK32=link.exe
 
 SOURCE=.\hook.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\log.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\spycode.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -94,6 +102,14 @@ SOURCE=.\hook.cpp
 # Begin Source File
 
 SOURCE="D:\Program Files (x86)\Microsoft Visual Studio\VC98\Include\BASETSD.H"
+# End Source File
+# Begin Source File
+
+SOURCE=.\hook.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\log.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

