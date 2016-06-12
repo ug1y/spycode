@@ -2,7 +2,8 @@
 
 HANDLE hMutex = NULL;
 
-int main(){
+
+int main(int argc, char **argv){
 	/*
 	SERVICE_TABLE_ENTRY ServiceTable[2];  
     ServiceTable[0].lpServiceName="SpyCode";  
@@ -16,12 +17,19 @@ int main(){
 	if (hMutex)
     {
         if(ERROR_ALREADY_EXISTS != GetLastError()){
-			hookVirtualKey();
+			int ret = MessageBox( 0, "运行键盘监听程序?", "spycode", MB_OKCANCEL );
+			if(ret==IDOK){
+				hookVirtualKey();
+			}
+			else{
+				exit(0);
+			}
 		}
 		else{
-			printf("Program's instance is already running\n"); 
+			MessageBox( 0, "程序已经在运行啦!", "提示", MB_OK );
 		}
 	}
+
 //	hookVirtualKey();
 	return 0;
 }

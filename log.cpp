@@ -62,6 +62,7 @@ int logToFile(char *str){
 	return 0;
 }
 
+
 //检查日志文件目录是否存在
 int logCheckFile(){
 	if(access(LOGPATH,0)==-1){
