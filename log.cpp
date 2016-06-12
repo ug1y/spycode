@@ -40,3 +40,34 @@ void logPrintInfo(LOG_STRU log){
 	sprintf(str,"%s,%ld,%s,%s,%s",log.time,log.pid,log.path,log.text,log.sCode);
 	printf("%s\n",str);
 }
+
+//写入日志文件中
+int logWriteFile(LOG_STRU log){
+	FILE *fid;
+	char str[MAX_LOG];
+	fid = fopen(LOGFILE,"a");
+	if (fid==NULL)return -1;
+	sprintf(str,"%s,%ld,%s,%s,%s",log.time,log.pid,log.path,log.text,log.sCode);
+	fprintf(fid,"%s\n",str);
+	fclose(fid);
+	return 0;
+}
+
+int logToFile(char *str){
+	FILE *fid;
+	fid = fopen(LOGFILE,"a");
+	if (fid==NULL)return -1;
+	fprintf(fid,"%s\n",str);
+	fclose(fid);
+	return 0;
+}
+
+//检查日志文件目录是否存在
+int logCheckFile(){
+	if(access(LOGPATH,0)==-1){
+		if(_mkdir(LOGPATH)){
+			return -1;
+		}
+	}
+	return 0;
+}
